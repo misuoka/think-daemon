@@ -22,6 +22,9 @@
     },
     "extra": {
         "think": {
+            "services": [
+                "misuoka\\think\\Service"
+            ],
             "config": {
                 "dpworker": "src/config/dpworker.php"
             }

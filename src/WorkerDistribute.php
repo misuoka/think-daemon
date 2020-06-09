@@ -7,6 +7,13 @@ use think\facade\Config;
 
 class WorkerDistribute
 {
+    private $config = [
+        'process' => [
+            'redirect_stdin_stdout' => false,
+            'pipe_type'             => 1,
+            'enable_coroutine'      => false,
+        ],
+    ];
     /**
      * 业务配置
      *
@@ -28,8 +35,10 @@ class WorkerDistribute
      */
     private $masterPid = null;
 
-    public function __construct()
+    public function __construct($config = [])
     {
+        Config::load('dpworker', 'service');
+        $this->config    = array_merge($this->config, $config, Config::get('dpworker.service.process'));
         $this->masterPid = \getmypid();
     }
 
@@ -52,7 +61,7 @@ class WorkerDistribute
                 printf("[%s] Service Status:\n", date("Y-m-d H:i:s"));
                 printf("Workers count: %d\n", count($this->workers));
                 echo "Memory Used  :\t" . sprintf("%.4f", memory_get_usage() / (1024 * 1024)) . " MB\n";
-            } 
+            }
         });
 
         // ctrl + c, ctrl + d
@@ -71,13 +80,13 @@ class WorkerDistribute
     {
         while (true) {
             pcntl_signal_dispatch();
-            
+
             if ($ret = Process::wait(false)) {
                 $pid   = intval($ret["pid"] ?? 0);
                 $index = $this->getIndexOfWorkerByPid($pid);
-                
+
                 if (false !== $index) {
-                    
+
                     $commandName = $this->workers[$index]->getCommand()->getName();
                     $command     = $this->getCommand($commandName);
 
@@ -141,6 +150,7 @@ class WorkerDistribute
     private function removeWorker(Command $command)
     {
         $index = $this->getIndexOfWorker($command->getName());
+
         if (false !== $index) {
             $this->workers[$index]->stop();
             $this->workers[$index]->setRemoving(true);
@@ -151,9 +161,11 @@ class WorkerDistribute
     {
         foreach ($this->workers as $index => $worker) {
             if ($commandName == $worker->getCommand()->getName()) {
+                
                 return $index;
             }
         }
+        
         return false;
     }
 
@@ -161,9 +173,11 @@ class WorkerDistribute
     {
         foreach ($this->workers as $index => $worker) {
             if ($pid == $worker->getPid()) {
+                
                 return $index;
             }
         }
+        
         return false;
     }
 
@@ -171,14 +185,17 @@ class WorkerDistribute
     {
         foreach ($this->commands as $command) {
             if ($commandName == $command->getName()) {
+        
                 return $command;
             }
         }
+
         return false;
     }
 
     private function runWorker(Worker $worker)
     {
+        $config    = $this->config['process'];
         $masterPid = $this->masterPid;
         $process   = new Process(function (Process $proc) use ($worker, $masterPid) {
             $worker->run(function () use ($proc, $masterPid) {
@@ -187,7 +204,7 @@ class WorkerDistribute
                     $proc->exit();
                 }
             });
-        }, true, 1);
+        }, $config['redirect_stdin_stdout'], $config['pipe_type'], $config['enable_coroutine']);
 
         $pid = $process->start();
         $worker->setPid($pid);

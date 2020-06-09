@@ -77,13 +77,19 @@ class DpWorker extends Command
 
         if ($this->input->hasOption('d')) {
             \Swoole\Process::daemon(true, true); // 设置为守护进程
+            $config = [
+                'process' => [
+                    'redirect_stdin_stdout' => true,
+                ]
+            ];
         } else {
             $this->output->writeln('You can exit with <info>`CTRL-C`</info>');
+            $config = [];
         }
 
+        $wd  = new WorkerDistribute($config);
         $pid = posix_getpid();
         // printf("主进程号: {$pid}\n");
-        $wd = new WorkerDistribute();
         $pidManager->create($pid, 0);
         $wd->run();
     }

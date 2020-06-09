@@ -38,7 +38,8 @@ class WorkerDistribute
     public function __construct($config = [])
     {
         Config::load('dpworker', 'service');
-        $this->config    = array_merge($this->config, $config, Config::get('dpworker.service.process'));
+        $process         = Config::get('dpworker.service.process') ?? [];
+        $this->config    = array_merge_recursive($this->config, $config, ['process' => $process]);
         $this->masterPid = \getmypid();
     }
 
@@ -161,11 +162,11 @@ class WorkerDistribute
     {
         foreach ($this->workers as $index => $worker) {
             if ($commandName == $worker->getCommand()->getName()) {
-                
+
                 return $index;
             }
         }
-        
+
         return false;
     }
 
@@ -173,11 +174,11 @@ class WorkerDistribute
     {
         foreach ($this->workers as $index => $worker) {
             if ($pid == $worker->getPid()) {
-                
+
                 return $index;
             }
         }
-        
+
         return false;
     }
 
@@ -185,7 +186,7 @@ class WorkerDistribute
     {
         foreach ($this->commands as $command) {
             if ($commandName == $command->getName()) {
-        
+
                 return $command;
             }
         }

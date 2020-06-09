@@ -8,11 +8,9 @@ use think\facade\Config;
 class WorkerDistribute
 {
     private $config = [
-        'process' => [
-            'redirect_stdin_stdout' => false,
-            'pipe_type'             => 1,
-            'enable_coroutine'      => false,
-        ],
+        'redirect_stdin_stdout' => false,
+        'pipe_type'             => 1,
+        'enable_coroutine'      => false,
     ];
     /**
      * 业务配置
@@ -39,7 +37,7 @@ class WorkerDistribute
     {
         Config::load('dpworker', 'service');
         $process         = Config::get('dpworker.service.process') ?? [];
-        $this->config    = array_merge_recursive($this->config, $config, ['process' => $process]);
+        $this->config    = array_merge($this->config, $process, $config);
         $this->masterPid = \getmypid();
     }
 
@@ -196,16 +194,15 @@ class WorkerDistribute
 
     private function runWorker(Worker $worker)
     {
-        $config    = $this->config['process'];
         $masterPid = $this->masterPid;
-        $process   = new Process(function (Process $proc) use ($worker, $masterPid) {
+        $process = new Process(function (Process $proc) use ($worker, $masterPid) {
             $worker->run(function () use ($proc, $masterPid) {
                 if (!Process::kill($masterPid, 0)) {
                     printf("[%s] 父进程不存在，退出子进程\n", date("Y-m-d H:i:s"));
                     $proc->exit();
                 }
             });
-        }, $config['redirect_stdin_stdout'], $config['pipe_type'], $config['enable_coroutine']);
+        }, $this->config['redirect_stdin_stdout'], $this->config['pipe_type'], $this->config['enable_coroutine']);
 
         $pid = $process->start();
         $worker->setPid($pid);

@@ -3,13 +3,13 @@ declare (strict_types = 1);
 
 namespace misuoka\think\command;
 
+use misuoka\think\PidManager;
+use misuoka\think\WorkerDistribute;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use misuoka\think\WorkerDistribute;
-use misuoka\think\PidManager;
 
 class DpWorker extends Command
 {
@@ -75,12 +75,12 @@ class DpWorker extends Command
 
         $this->output->writeln('Starting messenger service worker process ...');
 
-        if($this->input->hasOption('d')) {
+        if ($this->input->hasOption('d')) {
             \Swoole\Process::daemon(true, true); // 设置为守护进程
         } else {
             $this->output->writeln('You can exit with <info>`CTRL-C`</info>');
         }
-        
+
         $pid = posix_getpid();
         // printf("主进程号: {$pid}\n");
         $wd = new WorkerDistribute();
@@ -158,7 +158,7 @@ class DpWorker extends Command
             $this->output->writeln('messenger service worker process is running.');
             if (!$pidManager->killProcess(SIGUSR2)) {
                 $this->output->error('> failure');
-    
+
                 return;
             }
         } else {

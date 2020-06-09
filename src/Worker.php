@@ -11,7 +11,7 @@ class Worker
     private $removing;
 
     private $logic;
-    
+
     private $timestart;
 
     private $controlFile;
@@ -21,14 +21,14 @@ class Worker
         $this->setCommand($command);
     }
 
-    public function setCommand(Command $command) 
+    public function setCommand(Command $command)
     {
-        $this->command = $command;
-        $this->logic = $command->getLogic();
+        $this->command     = $command;
+        $this->logic       = $command->getLogic();
         $this->controlFile = sys_get_temp_dir() . "/" . $command->getName() . '_proccess.end';
     }
 
-    public function setPid($pid) 
+    public function setPid($pid)
     {
         $this->pid = $pid;
     }
@@ -55,7 +55,7 @@ class Worker
 
     public function run($callback = null)
     {
-        $logic = new $this->logic;
+        $logic           = new $this->logic;
         $this->timestart = time();
 
         do {
@@ -72,7 +72,7 @@ class Worker
                 $this->stop();
             }
 
-        } while($this->loop());
+        } while ($this->loop());
     }
 
     public function stop()
@@ -83,7 +83,7 @@ class Worker
     private function loop()
     {
         // 超时设置，避免进程挂死
-        if(time() - $this->timestart > 60 * $this->command->getLooptime() || $this->checkEnd()) {
+        if (time() - $this->timestart > 60 * $this->command->getLooptime() || $this->checkEnd()) {
             return false;
         }
 
@@ -92,8 +92,8 @@ class Worker
 
     private function checkEnd()
     {
-        if(file_exists($this->controlFile)) {
-            
+        if (file_exists($this->controlFile)) {
+
             @\unlink($this->controlFile);
             return true;
         }

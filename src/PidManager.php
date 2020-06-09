@@ -1,6 +1,6 @@
 <?php
 
-namespace app\service;
+namespace misuoka\think;
 
 use RuntimeException;
 use Swoole\Process;

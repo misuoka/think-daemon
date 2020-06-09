@@ -1,16 +1,15 @@
 <?php
 
-namespace think\swoole;
-
-use think\Route;
-use misuoka\think\DpWorker;
+namespace misuoka\think;
 
 class Service extends \think\Service
 {
 
-    public function boot()
+    public function register()
     {
-        $this->commands(DpWorker::class);
+        $this->commands([
+            'dpworker'       => '\\misuoka\\think\\command\\DpWorker',
+        ]);
     }
 
 }

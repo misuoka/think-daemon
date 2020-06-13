@@ -67,8 +67,15 @@ class Worker
 
                 \usleep($this->command->getSleeptime());
             } catch (\Exception $e) {
-                // throw $th;
+                
+                $message = "Daemon Worker run exception: " . $e->getMessage();
                 // 记录异常日志 ...
+                if(\is_callable($logic, 'log')) {
+                    $logic->log($message, "error");
+                }
+
+                echo $message . "\n";
+                
                 $this->stop();
             }
 

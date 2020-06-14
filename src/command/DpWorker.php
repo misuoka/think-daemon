@@ -76,7 +76,7 @@ class DpWorker extends Command
         $this->output->writeln('Starting messenger service worker process ...');
 
         if ($this->input->hasOption('d')) {
-            \Swoole\Process::daemon(true, true); // 设置为守护进程
+            \Swoole\Process::daemon(true, false); // 设置为守护进程
             $config = [
                 'redirect_stdin_stdout' => true,
             ];
